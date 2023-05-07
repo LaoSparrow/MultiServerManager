@@ -1,0 +1,200 @@
+﻿<UserControl x:Class="MultiServerManager.View.ServerListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MultiServerManager.View"
+             xmlns:vm="clr-namespace:MultiServerManager.ViewModel"
+             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=vm:ServerListViewModel,IsDesignTimeCreatable=False}"
+             d:Background="White"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <md:Card Margin="20"
+                 md:ElevationAssist.Elevation="Dp3">
+            <DataGrid x:Name="ServerList"
+                      ItemsSource="{Binding Servers}"
+                      SelectedItem="{Binding CurrentActiveServer}"
+                      CanUserAddRows="False"
+                      AutoGenerateColumns="False"
+                      HeadersVisibility="All"
+                      md:DataGridAssist.SelectedCellBorderBrush="Transparent">
+                <DataGrid.Columns>
+                    <DataGridCheckBoxColumn Binding="{Binding IsSelected}"
+                                            ElementStyle="{StaticResource MaterialDesignDataGridCheckBoxColumnStyle}"
+                                            EditingElementStyle="{StaticResource MaterialDesignDataGridCheckBoxColumnEditingStyle}" />
+                    <DataGridTextColumn Header="ID"
+                                        Binding="{Binding Id}"
+                                        ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                                        EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}" />
+                    <DataGridTextColumn Header="Name"
+                                        Binding="{Binding Name}"
+                                        ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                                        EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}" />
+                    <DataGridTextColumn Header="Description"
+                                        Binding="{Binding Description}"
+                                        ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                                        EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}" />
+                    <DataGridTemplateColumn Header="IsRunning">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Ellipse x:Name="IsRunningEllipse"
+                                         Height="6"
+                                         Width="6"
+                                         Fill="LightGray" />
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsRunning}"
+                                                 Value="True">
+                                        <Setter TargetName="IsRunningEllipse"
+                                                Property="Fill"
+                                                Value="LimeGreen" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Quick Actions">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button
+                                        Margin="0,0,10,0"
+                                        Height="30"
+                                        Width="30"
+                                        Style="{StaticResource MaterialDesignIconForegroundButton}"
+                                        Command="{Binding DataContext.QuickActionConsoleCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
+                                        CommandParameter="{Binding}">
+                                        <md:PackIcon
+                                            Height="20"
+                                            Width="20"
+                                            Kind="Console" />
+                                    </Button>
+                                    <Button
+                                        Height="30"
+                                        Width="30"
+                                        Style="{StaticResource MaterialDesignIconForegroundButton}">
+                                        <md:PackIcon
+                                            Height="20"
+                                            Width="20"
+                                            Kind="Puzzle" />
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+                <DataGrid.CellStyle>
+                    <Style TargetType="{x:Type DataGridCell}" BasedOn="{StaticResource MaterialDesignDataGridCell}">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="Transparent" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.CellStyle>
+                <DataGrid.RowStyle>
+                    <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource MaterialDesignDataGridRow}">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="Transparent" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+        </md:Card>
+
+        <!-- Popup Box -->
+        <md:PopupBox
+            Margin="0,0,35,30"
+            PlacementMode="TopAndAlignCentres"
+            Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
+            VerticalAlignment="Bottom"
+            HorizontalAlignment="Right">
+            <!--<md:PopupBox.ToggleContent>
+                <md:PackIcon
+                    Width="24"
+                    Height="24"
+                    Kind="PencilAdd" />
+            </md:PopupBox.ToggleContent>-->
+            <md:PopupBox.ToggleCheckedContent>
+                <md:PackIcon
+                    Width="24"
+                    Height="24"
+                    Kind="Close" />
+            </md:PopupBox.ToggleCheckedContent>
+            <StackPanel>
+                <Button
+                    Command="{Binding AddServerCommand}">
+                    <md:PackIcon Kind="Add" />
+                </Button>
+                <Button
+                    md:DialogHost.DialogClosedAttached="OnRemoveServerDialogClosed"
+                    Command="{x:Static md:DialogHost.OpenDialogCommand}">
+                    <Button.CommandParameter>
+                        <!-- Remove Server Dialog -->
+                        <StackPanel
+                            Margin="16">
+                            <StackPanel
+                                Margin="0,0,0,16"
+                                Orientation="Horizontal">
+                                <md:PackIcon
+                                    Width="50"
+                                    Height="50"
+                                    Kind="Alert"/>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="Do you really want to delete those servers?" />
+                            </StackPanel>
+                            <StackPanel
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+                                <Button
+                                    Margin="0,0,5,0"
+                                    Style="{StaticResource MaterialDesignFlatButton}"
+                                    Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                                    IsDefault="True"
+                                    Content="YES">
+                                    <Button.CommandParameter>
+                                        <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                            True
+                                        </system:Boolean>
+                                    </Button.CommandParameter>
+                                </Button>
+                                <Button
+                                    Style="{StaticResource MaterialDesignFlatButton}"
+                                    Command="{x:Static md:DialogHost.CloseDialogCommand}"
+                                    IsCancel="True"
+                                    Content="NO">
+                                    <Button.CommandParameter>
+                                        <system:Boolean xmlns:system="clr-namespace:System;assembly=mscorlib">
+                                            False
+                                        </system:Boolean>
+                                    </Button.CommandParameter>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Button.CommandParameter>
+                    <md:PackIcon Kind="Bin" />
+                </Button>
+                <Button
+                    Command="{Binding SaveServerListCommand}">
+                    <md:PackIcon Kind="ContentSave" />
+                </Button>
+                <Button
+                    Command="{Binding StartServerCommand}">
+                    <md:PackIcon Kind="Play" />
+                </Button>
+            </StackPanel>
+        </md:PopupBox>
+    </Grid>
+</UserControl>

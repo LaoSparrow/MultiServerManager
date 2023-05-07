@@ -1,0 +1,3 @@
+[submodule "External/SingleFileExtractor"]
+	path = External/SingleFileExtractor
+	url = https://github.com/LaoSparrow/SingleFileExtractor.git
